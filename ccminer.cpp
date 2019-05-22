@@ -2550,7 +2550,13 @@ static void *miner_thread(void *userdata)
 
         // if nonce found, submit work
         // Or if it's a tx and we have reached the nonce limit
-        if ((rc > 0 && !opt_benchmark) || (work.nonce_size == 4 && nonceptr[2] == 0xff)) {
+        if ((rc > 0 && !opt_benchmark) || (work.nonce_size == 4 && nonceptr[2] >= 0xff)) {
+            // If it's a tx, the nonce must be recreated getting 3 bytes of nonceptr[3] and 1 byte of nonceptr[2]
+            if (work.nonce_size == 4) {
+                nonceptr[3] = nonceptr[3] | ((nonceptr[2] & 0xff) << 3*8);
+                nonceptr[2] = 0;
+            }
+
 			uint32_t curnonce = nonceptr[0]; // current scan position
 
 			if (opt_led_mode == LED_MODE_SHARES)
@@ -2565,7 +2571,8 @@ static void *miner_thread(void *userdata)
 
 			// prevent stale work in solo
 			// we can't submit twice a block!
-			if (!have_stratum && !have_longpoll) {
+            // or if it's a tx
+			if ((!have_stratum && !have_longpoll) || (work.nonce_size == 4)) {
 				pthread_mutex_lock(&g_work_lock);
 				// will force getwork
 				g_work_time = 0;
