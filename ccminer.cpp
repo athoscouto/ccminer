@@ -1869,7 +1869,7 @@ static void *miner_thread(void *userdata)
 			// nonceptr[0] = ? // too many bytes, we can ignore this one
 		} 
 
-        } else if ((work.nonce_size == 16 && work.data[19] == UINT32_MAX) ||
+        else if ((work.nonce_size == 16 && work.data[19] == UINT32_MAX) ||
             (work.nonce_size == 4 && work.data[19] == 0xffffff)) {
             // If is block (nonce_size=16) and already reached the nonce limit (UINT32_MAX)
             // or is a tx (nonce_size=4) and already reached the nonce limit (3 bytes)
